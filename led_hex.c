@@ -1,6 +1,9 @@
 #include "system.h"
 #include "altera_avalon_pio_regs.h"
 #include "alt_types.h"
+#include "unistd.h"
+
+#define SPEAKER_BASE 0x4041020
 
 // 7-segment encoding (active low) for A-Z and space
 unsigned char seg7_alpha[] = {
@@ -84,6 +87,18 @@ void delay_ms(int ms) {
     for (i = 0; i < ms * 5000; i++);
 }
 
+void play_tone(int freq_hz, int duration_ms) {
+    int half_period_us = 1000000 / (freq_hz * 2);
+    int cycles = (duration_ms * freq_hz) / 1000;
+    int i;
+    for (i = 0; i < cycles; i++) {
+        IOWR_ALTERA_AVALON_PIO_DATA(SPEAKER_BASE, 1); // high
+        usleep(half_period_us);
+        IOWR_ALTERA_AVALON_PIO_DATA(SPEAKER_BASE, 0); // low
+        usleep(half_period_us);
+    }
+}
+
 int prev_sw1 = 0;
 int offset = 0;
 
@@ -91,10 +106,15 @@ int main() {
     char* message = "ARIGA-67  ";
     int len = strlen(message); // length of message
 
+    // Can use this if want to show leds just like that
+    // IOWR_ALTERA_AVALON_PIO_DATA(PIO_5_BASE, 0x3FF); // force all LEDs on
+
     while (1) {
         int sw = IORD_ALTERA_AVALON_PIO_DATA(PIO_6_BASE);
         int sw1 = (sw >> 0) & 1;
         int sw2 = (sw >> 1) & 1;
+        int sw3 = (sw >> 2) & 1;
+        int sw4 = (sw >> 3) & 1;
 
         // detect OFF -> ON transition
         if (sw1 && !prev_sw1) {
@@ -114,7 +134,20 @@ int main() {
             // SW1 on only - static display (first 6 chars)
             display_6chars(message, offset, len);
         }
-        prev_sw1 = sw1;
+
+        // LEDs run alongside - just mirror SW1
+		if (sw1) {
+			IOWR_ALTERA_AVALON_PIO_DATA(PIO_5_BASE, 0x3FF); // all on
+		} else {
+			IOWR_ALTERA_AVALON_PIO_DATA(PIO_5_BASE, 0x000); // all off
+		}
+
+		// SW4 controls speaker
+			if (sw4) {
+				play_tone(440, 500); // 440hz = A note, 500ms
+			}
+
+		prev_sw1 = sw1;
     }
     return 0;
 }
