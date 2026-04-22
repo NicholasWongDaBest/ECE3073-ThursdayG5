@@ -10,8 +10,10 @@
     - 34075720
     - alou0020@student.monash.edu
 
+
 # Project Description 
 This project is an embedded systems-based solution using the Intel FGPA DE10 platform with the NIOS II soft-core processor. It integrates hardware created in Quartus and software written in C (Eclipse) to control and interact with hardware components in real time. 
+
 
 # Project User Manual Guide
 1. Clone the Repository
