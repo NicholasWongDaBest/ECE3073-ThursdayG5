@@ -12,13 +12,25 @@
 
 
 # Project Description 
-This project is an embedded systems-based solution using the Intel FGPA DE10 platform with the NIOS II soft-core processor. It integrates hardware created in Quartus and software written in C (Eclipse) to control and interact with hardware components in real time. 
+This project is an embedded systems-based solution using the Intel FGPA DE10 platform with the NIOS II soft-core processor. It integrates hardware created in Quartus and software written in C (Eclipse) to control and interact with hardware components in real time.
 
+# Features
+- VGA display
+- LED and HEX display
+- Accelerometer
+- Buzzer
+- Interface with ESP32 via SPI
+- Grooove AI via camera
+- Multiprocessor system
+- RTOS implementation
 
 # Project User Manual Guide
-1. Clone the Repository
+1. Clone the Repository with
+   ```shell
+   ~$ git clone https://github.com/NicholasWongDaBest/ECE3073-ThursdayG5.git
+   ```
 
-2. Open Quartus Project
+3. Open Quartus Project
     - Launch Quartus Prime
     - Open the provided .qpf project file
     - Ensure all required files are included:
@@ -27,7 +39,7 @@ This project is an embedded systems-based solution using the Intel FGPA DE10 pla
         - Clock configuration files
         - Any HDL (.v, .vhd) files
 
-3. Configure Platform Designer (NIOS II System)
+4. Configure Platform Designer (NIOS II System)
     - Open Platform Designer (.qsys)
     - Verify that the system includes:
         - NIOS II processor
@@ -38,7 +50,7 @@ This project is an embedded systems-based solution using the Intel FGPA DE10 pla
         - On chip memory
     - Generate the system
 
-4. Assign Pins
+5. Assign Pins
     - Open Pin Planner
     - Assign FPGA pins according to the DE10-Lite board:
         - Switches (SW)
@@ -47,26 +59,26 @@ This project is an embedded systems-based solution using the Intel FGPA DE10 pla
         - Push buttons
     - Save assignments
 
-5. Compile the Project
+6. Compile the Project
     - Run:
         - Analysis & Synthesis
         - Full Compilation
     - Ensure there are no critical errors
 
-6. Program the FPGA
+7. Program the FPGA
     - Open Programmer
     - Load the .sof file
     - Select USB-Blaster
     - Click Start to program the board
 
-7. Create NIOS II Software Project
+8. Create NIOS II Software Project
     - Open NIOS II Software Build Tools (Eclipse)
     - Create:
         - New Application Project
         - Select your .sopcinfo file
     - Choose template (e.g., Hello World or blank)
 
-8. Build and Run
+9. Build and Run
     - Copy & Paste / Write your C code to:
         - Control HEX display
         - Read switches
@@ -78,11 +90,11 @@ This project is an embedded systems-based solution using the Intel FGPA DE10 pla
     - Build project
     - Run on hardware
 
-9. Basic Functionality
+10. Basic Functionality
     - Ensure all the peripherals or base functions work
     - All peripherals should work using polling (interrupt optional)
 
-10. Testing
+11. Testing
     - Verify all hardware components respond correctly
     - Ensure no compilation or runtime errors
     - Demonstrate stable operation for all switches and displays
