@@ -1,0 +1,122 @@
+#ifndef IMAGETRANSFORM_H
+#define IMAGETRANSFORM_H
+
+#include <Arduino.h>
+#include <string.h>
+#include "mbedtls/base64.h"
+#include <JPEGDEC.h>
+
+// Dimensions required by the FPGA
+#define OUT_WIDTH 320
+#define OUT_HEIGHT 240
+#define OUT_BUFFER_SIZE (OUT_WIDTH * OUT_HEIGHT)
+
+// This is the global array your main.ino will access
+uint8_t final_bitmap[OUT_BUFFER_SIZE];
+
+#define DECODED_IMAGE_MAX_SIZE (15 * 1024) 
+static unsigned char jpegImage[DECODED_IMAGE_MAX_SIZE + 1];
+
+JPEGDEC jpeg;
+
+// Globals for the JPEGDEC Callback
+static uint8_t* raw_decode_buf = nullptr;
+static int raw_w = 0;
+static int raw_h = 0;
+
+// Callback: Triggered by JPEGDEC to process blocks of pixels
+int JPEGDraw(JPEGDRAW *pDraw) {
+    if (!raw_decode_buf) return 0; 
+
+    for (int y = 0; y < pDraw->iHeight; y++) {
+        for (int x = 0; x < pDraw->iWidth; x++) {
+            // Get the native 16-bit color
+            uint16_t rgb = pDraw->pPixels[y * pDraw->iWidth + x];
+            
+            // Extract to RGB332
+            uint8_t r = (rgb >> 13) & 0x07;
+            uint8_t g = (rgb >> 8)  & 0x07;
+            uint8_t b = (rgb >> 3)  & 0x03;
+            
+            uint8_t rgb332 = (r << 5) | (g << 2) | b;
+
+            int dest_x = pDraw->x + x;
+            int dest_y = pDraw->y + y;
+            
+            if (dest_x < raw_w && dest_y < raw_h) {
+                raw_decode_buf[dest_y * raw_w + dest_x] = rgb332;
+            }
+        }
+    }
+    return 1; 
+}
+
+// Main integration function called by main.ino
+bool processBase64Jpeg(const char* base64_str) {
+    if (!base64_str) return false;
+
+    size_t str_len = strlen(base64_str);
+    size_t output_len = 0;
+    
+    // --- 1. DECODE BASE64 TO RAW JPEG BYTES ---
+    int decode_ret = mbedtls_base64_decode(NULL, 0, &output_len, (const unsigned char*)base64_str, str_len);
+    if (decode_ret == MBEDTLS_ERR_BASE64_INVALID_CHARACTER) {
+        Serial.println("ERROR: Invalid character in Base64 string");
+        return false;
+    }
+    if (output_len == 0 || output_len > DECODED_IMAGE_MAX_SIZE) {
+        Serial.println("ERROR: Base64 decode output size is too large or zero.");
+        return false;
+    }
+
+    decode_ret = mbedtls_base64_decode(jpegImage, DECODED_IMAGE_MAX_SIZE, &output_len, (const unsigned char*)base64_str, str_len);
+    if (decode_ret != 0) {
+        Serial.println("ERROR: Failed to decode Base64 string");
+        return false;
+    }
+
+    // --- 2. DECODE JPEG BYTES TO RGB332 PIXELS ---
+    if (!jpeg.openRAM(jpegImage, output_len, JPEGDraw)) {
+        Serial.println("ERROR: Failed to open JPEG in RAM.");
+        return false;
+    }
+
+    raw_w = jpeg.getWidth();
+    raw_h = jpeg.getHeight();
+
+    // Allocate temporary memory for the unscaled image
+    raw_decode_buf = (uint8_t*)malloc(raw_w * raw_h);
+    if (!raw_decode_buf) {
+        Serial.println("ERROR: Out of Memory for raw_decode_buf");
+        jpeg.close();
+        return false;
+    }
+
+    bool success = false;
+    // Decode with standard parameters (0)
+    if (jpeg.decode(0, 0, 0)) {
+        // Nearest-neighbor scaling down to 320x240
+        float x_ratio = (float)raw_w / OUT_WIDTH;
+        float y_ratio = (float)raw_h / OUT_HEIGHT;
+
+        for (int y = 0; y < OUT_HEIGHT; y++) {
+            for (int x = 0; x < OUT_WIDTH; x++) {
+                int px = (int)(x * x_ratio);
+                int py = (int)(y * y_ratio);
+                final_bitmap[y * OUT_WIDTH + x] = raw_decode_buf[py * raw_w + px];
+            }
+        }
+        success = true;
+    } else {
+        Serial.println("ERROR: JPEGDEC decoding failed.");
+    }
+
+    // Cleanup
+    free(raw_decode_buf); 
+    raw_decode_buf = nullptr;
+    jpeg.close();
+
+    return success;
+}
+
+#endif
