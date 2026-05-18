@@ -49,9 +49,9 @@ OS_EVENT *vga_trigger_sem; // Semaphore to wake up the VGA task
 
 //base addresses
 int* DRAM_WRADDR = (int*) 0x01E00000;
-int* ACCE_WRADDR = (int*) 0x01E04B00;
-int* EMER_ADDR = (int*) 0x01E02580;
-int* CORE2_WRADDR = (int*) 0x01E04B10;
+int* ACCE_WRADDR  = (int*) 0x01E12C00;
+int* EMER_ADDR    = (int*) 0x01E12C14;
+int* CORE2_WRADDR = (int*) 0x01E12C10;
 
 volatile int edge_capture;
 volatile int start_vga = 0;
@@ -89,61 +89,36 @@ static void handle_rx_interrupts (void* context, alt_u32 id) {
 #include "altera_avalon_pio_regs.h" // Required for the PIO macros
 #include "system.h"                 // Required for your BASE addresses
 
-void write_pixel_8bit(uint8_t* ADDRESS) {
+void write_pixel_color(int* ADDRESS) {
+    for (int i = 0; i < 76800; i++) {
+        // Compensate for little-endian 32-bit storage by Core 1:
+        // byte 0->3, 1->2, 2->1, 3_>0, 4->7, 5->6 ...
+        int byte_addr = (i & ~3) | (3 - (i & 3));
+
+        uint8_t pixel = IORD_8DIRECT(ADDRESS, byte_addr);
+        IOWR_ALTERA_AVALON_PIO_DATA(IMG_ADDR_BASE, i);
+        IOWR_ALTERA_AVALON_PIO_DATA(PIXEL_BASE, pixel);
+        IOWR_ALTERA_AVALON_PIO_DATA(WREN_BASE, 1);
+        IOWR_ALTERA_AVALON_PIO_DATA(WREN_BASE, 0);
+    }
+    alt_printf("Frame written\n");
+}
+
+void write_pixel_emergency(uint8_t* ADDRESS) {
     unsigned int addr = 0;
-
-    // Loop 9600 times (once for every byte in your array)
     for (int i = 0; i < 9600; i++) {
-        // Read exactly 1 byte directly from memory
         uint8_t byte_pixel = IORD_8DIRECT(ADDRESS, i);
-
-        // Loop 8 times (for the 8 bits in this byte)
         for (int b = 0; b < 8; b++) {
-            // Check the top bit (0x80) instead of 0x80000000
-            uint8_t pixel_val = (byte_pixel & 0x80) ? 0x0F : 0x00;
-
+            // 1bpp -> RGB332 white (0xFF) or black (0x00)
+            uint8_t pixel = (byte_pixel & 0x80) ? 0xFF : 0x00;
             IOWR_ALTERA_AVALON_PIO_DATA(IMG_ADDR_BASE, addr++);
-            IOWR_ALTERA_AVALON_PIO_DATA(PIXEL_BASE, pixel_val);
-
+            IOWR_ALTERA_AVALON_PIO_DATA(PIXEL_BASE, pixel);
             IOWR_ALTERA_AVALON_PIO_DATA(WREN_BASE, 1);
             IOWR_ALTERA_AVALON_PIO_DATA(WREN_BASE, 0);
-
             byte_pixel <<= 1;
         }
     }
-    alt_printf("Image display complete!\n");
-    start_vga = 0;
-}
-
-void write_pixel(int* ADDRESS) {
-    uint32_t offset_read = 0;
-    unsigned int addr = 0;
-
-    for (int i = 0; i < 2400; i++) {
-        // We still use IORD_32DIRECT here because we are reading from
-        // raw SDRAM memory, not a PIO component.
-        uint32_t word_pixel = IORD_32DIRECT(ADDRESS, offset_read);
-        offset_read += 4;
-
-        for (int b = 0; b < 32; b++) {
-            // Determine pixel color (0x0F for white/on, 0x00 for black/off)
-            uint8_t pixel_val = (word_pixel & 0x80000000) ? 0x0F : 0x00;
-
-            // 1. Write the Address to the hardware
-            IOWR_ALTERA_AVALON_PIO_DATA(IMG_ADDR_BASE, addr++);
-
-            // 2. Write the Pixel Data to the hardware
-            IOWR_ALTERA_AVALON_PIO_DATA(PIXEL_BASE, pixel_val);
-
-            // 3. Pulse Write Enable (Cache Bypassed - hardware WILL see this!)
-            IOWR_ALTERA_AVALON_PIO_DATA(WREN_BASE, 1);
-            IOWR_ALTERA_AVALON_PIO_DATA(WREN_BASE, 0);
-
-            word_pixel <<= 1;
-        }
-    }
-    alt_printf("Image display complete!\n");
-    start_vga = 0;
+    alt_printf("Emergency image written\n");
 }
 
 /* Definition of Task Stacks */
@@ -156,29 +131,24 @@ OS_STK    cpu_monitor_task_stk[TASK_STACKSIZE];
 #define VGA_PRIORITY      1
 #define CPU_MONITOR_PRIO  2
 
-void vga_task(void* pdata)
-{
-    INT8U err; // Variable to hold RTOS error codes
+void vga_task(void* pdata) {
+    INT8U err;
 
-    while(1){
-        // Pend (Sleep) until the ISR triggers the semaphore ---
-        // '0' means wait forever with no timeout.
-        // CPU usage drops to 0% here until the ISR calls OSSemPost!
+    while(1) {
         OSSemPend(vga_trigger_sem, 0, &err);
 
-        if(!emergency_stop){
-            if(rx_buffer & 0x80000000){
-                write_pixel(DRAM_WRADDR);
+        if (!emergency_stop) {
+            if (rx_buffer & 0x80000000) {
+                write_pixel_color(DRAM_WRADDR);
                 rx_buffer = 0x0;
             }
         }
-        if(!prev_emergency && emergency_stop){
-        	write_pixel_8bit((uint8_t*) emergency_image);
+        if (!prev_emergency && emergency_stop) {
+            write_pixel_emergency((uint8_t*) emergency_image);
         }
         prev_emergency = emergency_stop;
     }
 }
-
 void cpu_monitor_task(void* pdata) {
     while(1) {
         // Write the CPU usage percentage (0-100) to your exact SDRAM address

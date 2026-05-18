@@ -52,9 +52,9 @@ static void handle_rx_interrupts(void* context, alt_u32 id);
 
 volatile int emergency_stop = 0; //flag for emergency stop
 
-int* EMER_ADDR = (int*) 0x01E02580;
-int* ACCE_WRADDR = (int*) 0x01E04B00;
-int* CORE0_WRADDR = (int*) 0x01E04B0C;
+int* EMER_ADDR    = (int*) 0x01E12C14;
+int* ACCE_WRADDR  = (int*) 0x01E12C00;
+int* CORE0_WRADDR = (int*) 0x01E12C0C;
 
 static void init_rx() {
 	void* edge_capture_ptr = (void*) &edge_capture;

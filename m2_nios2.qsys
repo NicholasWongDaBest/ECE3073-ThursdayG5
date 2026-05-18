@@ -587,6 +587,27 @@
          type = "String";
       }
    }
+   element spi_ready
+   {
+      datum _sortIndex
+      {
+         value = "33";
+         type = "int";
+      }
+   }
+   element spi_ready.s1
+   {
+      datum _lockedAddress
+      {
+         value = "1";
+         type = "boolean";
+      }
+      datum baseAddress
+      {
+         value = "67108864";
+         type = "String";
+      }
+   }
    element switches
    {
       datum _sortIndex
@@ -620,7 +641,7 @@
    {
       datum _lockedAddress
       {
-         value = "0";
+         value = "1";
          type = "boolean";
       }
       datum baseAddress
@@ -639,6 +660,11 @@
    }
    element timer_1.s1
    {
+      datum _lockedAddress
+      {
+         value = "1";
+         type = "boolean";
+      }
       datum baseAddress
       {
          value = "67112992";
@@ -663,9 +689,14 @@
    }
    element timer_2.s1
    {
+      datum _lockedAddress
+      {
+         value = "1";
+         type = "boolean";
+      }
       datum baseAddress
       {
-         value = "67112992";
+         value = "67108896";
          type = "String";
       }
    }
@@ -795,6 +826,11 @@
  <interface name="sdram" internal="shared_sdram.wire" type="conduit" dir="end" />
  <interface name="sdram_clk" internal="altpll_0.c0" type="clock" dir="start" />
  <interface name="spi" internal="spi_0.external" type="conduit" dir="end" />
+ <interface
+   name="spi_ready"
+   internal="spi_ready.external_connection"
+   type="conduit"
+   dir="end" />
  <interface
    name="sw"
    internal="switches.external_connection"
@@ -1160,7 +1196,7 @@
   <parameter name="resetValue" value="0" />
   <parameter name="simDoTestBenchWiring" value="false" />
   <parameter name="simDrivenValue" value="0" />
-  <parameter name="width" value="1" />
+  <parameter name="width" value="5" />
  </module>
  <module name="clk_0" kind="clock_source" version="18.1" enabled="1">
   <parameter name="clockFrequency" value="50000000" />
@@ -1384,7 +1420,7 @@
   <parameter name="dataAddrWidth" value="27" />
   <parameter name="dataMasterHighPerformanceAddrWidth" value="1" />
   <parameter name="dataMasterHighPerformanceMapParam" value="" />
-  <parameter name="dataSlaveMapParam"><![CDATA[<address-map><slave name='shared_sdram.s1' start='0x0' end='0x4000000' type='altera_avalon_new_sdram_controller.s1' /><slave name='core1.debug_mem_slave' start='0x4000800' end='0x4001000' type='altera_nios2_gen2.debug_mem_slave' /><slave name='timer_1.s1' start='0x4001020' end='0x4001040' type='altera_avalon_timer.s1' /><slave name='spi_0.spi_control_port' start='0x4001040' end='0x4001060' type='altera_avalon_spi.spi_control_port' /><slave name='altpll_0.pll_slave' start='0x4001060' end='0x4001070' type='altpll.pll_slave' /><slave name='mutex_0.s1' start='0x4001070' end='0x4001078' type='altera_avalon_mutex.s1' /><slave name='jtag_uart_core1.avalon_jtag_slave' start='0x4001078' end='0x4001080' type='altera_avalon_jtag_uart.avalon_jtag_slave' /><slave name='clock_interrupt.s1' start='0x4001080' end='0x4001090' type='altera_avalon_pio.s1' /><slave name='buzzer.s1' start='0x4001090' end='0x40010A0' type='altera_avalon_pio.s1' /><slave name='extern_leds.s1' start='0x40010A0' end='0x40010B0' type='altera_avalon_pio.s1' /><slave name='onboard_leds.s1' start='0x40010B0' end='0x40010C0' type='altera_avalon_pio.s1' /><slave name='hex345.s1' start='0x40010C0' end='0x40010D0' type='altera_avalon_pio.s1' /><slave name='hex012.s1' start='0x40010D0' end='0x40010E0' type='altera_avalon_pio.s1' /><slave name='push_buttons.s1' start='0x40010E0' end='0x40010F0' type='altera_avalon_pio.s1' /><slave name='switches.s1' start='0x40010F0' end='0x4001100' type='altera_avalon_pio.s1' /><slave name='irq_core1_rx.s1' start='0x4001100' end='0x4001110' type='altera_avalon_pio.s1' /><slave name='irq_core1_tx.s1' start='0x4001110' end='0x4001120' type='altera_avalon_pio.s1' /><slave name='accelerometer_spi_0.avalon_accelerometer_spi_mode_slave' start='0x4001120' end='0x4001122' type='altera_up_avalon_accelerometer_spi.avalon_accelerometer_spi_mode_slave' /></address-map>]]></parameter>
+  <parameter name="dataSlaveMapParam"><![CDATA[<address-map><slave name='shared_sdram.s1' start='0x0' end='0x4000000' type='altera_avalon_new_sdram_controller.s1' /><slave name='spi_ready.s1' start='0x4000000' end='0x4000010' type='altera_avalon_pio.s1' /><slave name='core1.debug_mem_slave' start='0x4000800' end='0x4001000' type='altera_nios2_gen2.debug_mem_slave' /><slave name='timer_1.s1' start='0x4001020' end='0x4001040' type='altera_avalon_timer.s1' /><slave name='spi_0.spi_control_port' start='0x4001040' end='0x4001060' type='altera_avalon_spi.spi_control_port' /><slave name='altpll_0.pll_slave' start='0x4001060' end='0x4001070' type='altpll.pll_slave' /><slave name='mutex_0.s1' start='0x4001070' end='0x4001078' type='altera_avalon_mutex.s1' /><slave name='jtag_uart_core1.avalon_jtag_slave' start='0x4001078' end='0x4001080' type='altera_avalon_jtag_uart.avalon_jtag_slave' /><slave name='clock_interrupt.s1' start='0x4001080' end='0x4001090' type='altera_avalon_pio.s1' /><slave name='buzzer.s1' start='0x4001090' end='0x40010A0' type='altera_avalon_pio.s1' /><slave name='extern_leds.s1' start='0x40010A0' end='0x40010B0' type='altera_avalon_pio.s1' /><slave name='onboard_leds.s1' start='0x40010B0' end='0x40010C0' type='altera_avalon_pio.s1' /><slave name='hex345.s1' start='0x40010C0' end='0x40010D0' type='altera_avalon_pio.s1' /><slave name='hex012.s1' start='0x40010D0' end='0x40010E0' type='altera_avalon_pio.s1' /><slave name='push_buttons.s1' start='0x40010E0' end='0x40010F0' type='altera_avalon_pio.s1' /><slave name='switches.s1' start='0x40010F0' end='0x4001100' type='altera_avalon_pio.s1' /><slave name='irq_core1_rx.s1' start='0x4001100' end='0x4001110' type='altera_avalon_pio.s1' /><slave name='irq_core1_tx.s1' start='0x4001110' end='0x4001120' type='altera_avalon_pio.s1' /><slave name='accelerometer_spi_0.avalon_accelerometer_spi_mode_slave' start='0x4001120' end='0x4001122' type='altera_up_avalon_accelerometer_spi.avalon_accelerometer_spi_mode_slave' /></address-map>]]></parameter>
   <parameter name="data_master_high_performance_paddr_base" value="0" />
   <parameter name="data_master_high_performance_paddr_size" value="0" />
   <parameter name="data_master_paddr_base" value="0" />
@@ -1562,7 +1598,7 @@
   <parameter name="dataAddrWidth" value="27" />
   <parameter name="dataMasterHighPerformanceAddrWidth" value="1" />
   <parameter name="dataMasterHighPerformanceMapParam" value="" />
-  <parameter name="dataSlaveMapParam"><![CDATA[<address-map><slave name='shared_sdram.s1' start='0x0' end='0x4000000' type='altera_avalon_new_sdram_controller.s1' /><slave name='core2.debug_mem_slave' start='0x4000800' end='0x4001000' type='altera_nios2_gen2.debug_mem_slave' /><slave name='timer_2.s1' start='0x4001020' end='0x4001040' type='altera_avalon_timer.s1' /><slave name='wren.s1' start='0x4001040' end='0x4001050' type='altera_avalon_pio.s1' /><slave name='img_addr.s1' start='0x4001050' end='0x4001060' type='altera_avalon_pio.s1' /><slave name='altpll_0.pll_slave' start='0x4001060' end='0x4001070' type='altpll.pll_slave' /><slave name='mutex_0.s1' start='0x4001070' end='0x4001078' type='altera_avalon_mutex.s1' /><slave name='jtag_uart_core2.avalon_jtag_slave' start='0x4001078' end='0x4001080' type='altera_avalon_jtag_uart.avalon_jtag_slave' /><slave name='pixel.s1' start='0x4001080' end='0x4001090' type='altera_avalon_pio.s1' /><slave name='irq_core2_tx.s1' start='0x4001090' end='0x40010A0' type='altera_avalon_pio.s1' /><slave name='irq_core2_rx.s1' start='0x40010A0' end='0x40010B0' type='altera_avalon_pio.s1' /></address-map>]]></parameter>
+  <parameter name="dataSlaveMapParam"><![CDATA[<address-map><slave name='shared_sdram.s1' start='0x0' end='0x4000000' type='altera_avalon_new_sdram_controller.s1' /><slave name='timer_2.s1' start='0x4000020' end='0x4000040' type='altera_avalon_timer.s1' /><slave name='core2.debug_mem_slave' start='0x4000800' end='0x4001000' type='altera_nios2_gen2.debug_mem_slave' /><slave name='wren.s1' start='0x4001040' end='0x4001050' type='altera_avalon_pio.s1' /><slave name='img_addr.s1' start='0x4001050' end='0x4001060' type='altera_avalon_pio.s1' /><slave name='altpll_0.pll_slave' start='0x4001060' end='0x4001070' type='altpll.pll_slave' /><slave name='mutex_0.s1' start='0x4001070' end='0x4001078' type='altera_avalon_mutex.s1' /><slave name='jtag_uart_core2.avalon_jtag_slave' start='0x4001078' end='0x4001080' type='altera_avalon_jtag_uart.avalon_jtag_slave' /><slave name='pixel.s1' start='0x4001080' end='0x4001090' type='altera_avalon_pio.s1' /><slave name='irq_core2_tx.s1' start='0x4001090' end='0x40010A0' type='altera_avalon_pio.s1' /><slave name='irq_core2_rx.s1' start='0x40010A0' end='0x40010B0' type='altera_avalon_pio.s1' /></address-map>]]></parameter>
   <parameter name="data_master_high_performance_paddr_base" value="0" />
   <parameter name="data_master_high_performance_paddr_size" value="0" />
   <parameter name="data_master_paddr_base" value="0" />
@@ -1601,7 +1637,7 @@
   <parameter name="icache_tagramBlockType" value="Automatic" />
   <parameter name="impl" value="Fast" />
   <parameter name="instAddrWidth" value="27" />
-  <parameter name="instSlaveMapParam"><![CDATA[<address-map><slave name='shared_sdram.s1' start='0x0' end='0x4000000' type='altera_avalon_new_sdram_controller.s1' /><slave name='core2.debug_mem_slave' start='0x4000800' end='0x4001000' type='altera_nios2_gen2.debug_mem_slave' /><slave name='timer_2.s1' start='0x4001020' end='0x4001040' type='altera_avalon_timer.s1' /></address-map>]]></parameter>
+  <parameter name="instSlaveMapParam"><![CDATA[<address-map><slave name='shared_sdram.s1' start='0x0' end='0x4000000' type='altera_avalon_new_sdram_controller.s1' /><slave name='timer_2.s1' start='0x4000020' end='0x4000040' type='altera_avalon_timer.s1' /><slave name='core2.debug_mem_slave' start='0x4000800' end='0x4001000' type='altera_nios2_gen2.debug_mem_slave' /></address-map>]]></parameter>
   <parameter name="instructionMasterHighPerformanceAddrWidth" value="1" />
   <parameter name="instructionMasterHighPerformanceMapParam" value="" />
   <parameter name="instruction_master_high_performance_paddr_base" value="0" />
@@ -1979,7 +2015,7 @@
   <parameter name="resetValue" value="0" />
   <parameter name="simDoTestBenchWiring" value="false" />
   <parameter name="simDrivenValue" value="0" />
-  <parameter name="width" value="4" />
+  <parameter name="width" value="8" />
  </module>
  <module
    name="push_buttons"
@@ -2041,8 +2077,22 @@
   <parameter name="masterSPI" value="true" />
   <parameter name="numberOfSlaves" value="2" />
   <parameter name="syncRegDepth" value="2" />
-  <parameter name="targetClockRate" value="9000000" />
+  <parameter name="targetClockRate" value="50000000" />
   <parameter name="targetSlaveSelectToSClkDelay" value="0.0" />
+ </module>
+ <module name="spi_ready" kind="altera_avalon_pio" version="18.1" enabled="1">
+  <parameter name="bitClearingEdgeCapReg" value="false" />
+  <parameter name="bitModifyingOutReg" value="false" />
+  <parameter name="captureEdge" value="false" />
+  <parameter name="clockRate" value="50000000" />
+  <parameter name="direction" value="Input" />
+  <parameter name="edgeType" value="RISING" />
+  <parameter name="generateIRQ" value="false" />
+  <parameter name="irqType" value="LEVEL" />
+  <parameter name="resetValue" value="0" />
+  <parameter name="simDoTestBenchWiring" value="false" />
+  <parameter name="simDrivenValue" value="0" />
+  <parameter name="width" value="1" />
  </module>
  <module name="switches" kind="altera_avalon_pio" version="18.1" enabled="1">
   <parameter name="bitClearingEdgeCapReg" value="false" />
@@ -2430,7 +2480,16 @@
    start="core2.data_master"
    end="timer_2.s1">
   <parameter name="arbitrationPriority" value="1" />
-  <parameter name="baseAddress" value="0x04001020" />
+  <parameter name="baseAddress" value="0x04000020" />
+  <parameter name="defaultConnection" value="false" />
+ </connection>
+ <connection
+   kind="avalon"
+   version="18.1"
+   start="core1.data_master"
+   end="spi_ready.s1">
+  <parameter name="arbitrationPriority" value="1" />
+  <parameter name="baseAddress" value="0x04000000" />
   <parameter name="defaultConnection" value="false" />
  </connection>
  <connection
@@ -2502,7 +2561,7 @@
    start="core2.instruction_master"
    end="timer_2.s1">
   <parameter name="arbitrationPriority" value="1" />
-  <parameter name="baseAddress" value="0x04001020" />
+  <parameter name="baseAddress" value="0x04000020" />
   <parameter name="defaultConnection" value="false" />
  </connection>
  <connection
@@ -2573,6 +2632,7 @@
  <connection kind="clock" version="18.1" start="clk_0.clk" end="timer_0.clk" />
  <connection kind="clock" version="18.1" start="clk_0.clk" end="timer_1.clk" />
  <connection kind="clock" version="18.1" start="clk_0.clk" end="timer_2.clk" />
+ <connection kind="clock" version="18.1" start="clk_0.clk" end="spi_ready.clk" />
  <connection
    kind="clock"
    version="18.1"
@@ -2797,6 +2857,11 @@
    version="18.1"
    start="clk_0.clk_reset"
    end="timer_2.reset" />
+ <connection
+   kind="reset"
+   version="18.1"
+   start="clk_0.clk_reset"
+   end="spi_ready.reset" />
  <connection
    kind="reset"
    version="18.1"
