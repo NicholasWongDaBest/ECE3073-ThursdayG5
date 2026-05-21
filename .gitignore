@@ -119,3 +119,7 @@ software/*/*.elf
 software/*/*.map
 software/*/*.objdump
 software/*/readme.txt
+
+# Window metadata removals
+Zone.Identifier
+*:Zone.Identifier
